@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MedScan.pk - AI-Based Lab Report Analyzer for Pakistani Patients. Upload your lab report and get doctor-style analysis.">
+  <title>AI Lab Report Analyzer</title>
+  <script src="https://unpkg.com/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* Best Professional & Enterprise UI */
+    :root {
+        --brand-blue: #2563eb;
+        --brand-dark: #0f172a;
+        --soft-bg: #f8fafc;
+        --border-color: #e2e8f0;
+        --success-teal: #059669;
+        --warning-gold: #d97706;
+        --radius-lg: 16px;
+        --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    * { 
+        box-sizing: border-box; 
+        transition: all 0.2s ease-in-out;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: var(--soft-bg);
+        color: var(--brand-dark);
+        margin: 0;
+        padding: 60px 20px;
+        line-height: 1.6;
+    }
+
+    .container { max-width: 850px; margin: 0 auto; }
+
+    /* Professional Header Gradient */
+    .header { text-align: center; margin-bottom: 50px; }
+    .header h2 { 
+        font-size: 2.5rem; 
+        font-weight: 800; 
+        letter-spacing: -1px;
+        color: var(--brand-dark);
+        margin: 0 0 12px 0;
+    }
+    .header p { color: #64748b; font-size: 1.1rem; }
+
+    /* Ultra-Clean Upload Box */
+    .upload-box {
+        border: 2px dashed #cbd5e1;
+        border-radius: var(--radius-lg);
+        padding: 70px 40px;
+        text-align: center;
+        background: #ffffff;
+        cursor: pointer;
+        border-spacing: 10px;
+        position: relative;
+    }
+
+    .upload-box:hover {
+        border-color: var(--brand-blue);
+        background: #fdfdff;
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    /* Icon or Illustration Space */
+    .upload-icon {
+        width: 64px;
+        height: 64px;
+        background: #eff6ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: var(--brand-blue);
+        font-size: 24px;
+    }
+
+    .upload-text-main {
+        font-size: 1.15rem;
+        font-weight: 600;
+        display: block;
+        color: var(--brand-dark);
+    }
+
+    .upload-text-sub {
+        font-size: 0.95rem;
+        color: #64748b;
+        margin-top: 8px;
+        display: block;
+    }
+
+    /* Refined Report Section */
+    .report { 
+        background: white; 
+        border-radius: var(--radius-lg); 
+        padding: 40px; 
+        margin-top: 40px; 
+        box-shadow: var(--shadow-sm); 
+        border: 1px solid var(--border-color);
+    }
+
+    .test-title { 
+        font-size: 1.4rem; 
+        font-weight: 700; 
+        color: var(--brand-dark); 
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Status Items */
+    .analysis-item { 
+        margin-bottom: 12px; 
+        padding: 18px 24px; 
+        border-radius: 12px;
+        border-left: 6px solid var(--success-teal); 
+        background: #f0fdf4; 
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .analysis-item.abnormal { 
+        border-left-color: var(--warning-gold); 
+        background: #fffbeb; 
+    }
+
+    /* Professional Buttons */
+    .btn { 
+        background: var(--brand-blue); 
+        color: white; 
+        border: none; 
+        padding: 14px 32px; 
+        border-radius: 10px; 
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn:hover { 
+        background: #1d4ed8; 
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    }
+
+    /* Mobile Optimization */
+    @media (max-width: 640px) {
+        body { padding: 30px 15px; }
+        .header h1 { font-size: 1.8rem; }
+        .upload-box { padding: 40px 20px; }
+    }
+ </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><br><br>
+      <h2>🩺 AI - Based Medical Laboratory Test Report Analyzer</h2>
+      <p>𝘋𝘪𝘴𝘤𝘭𝘢𝘪𝘮𝘦𝘳 : 𝘛𝘩𝘪𝘴 𝘈𝘐 𝘵𝘰𝘰𝘭 𝘪𝘴 𝘢 𝘵𝘦𝘤𝘩𝘯𝘪𝘤𝘢𝘭 𝘥𝘦𝘮𝘰 𝘥𝘦𝘴𝘪𝘨𝘯𝘦𝘥 𝘧𝘰𝘳 𝘦𝘥𝘶𝘤𝘢𝘵𝘪𝘰𝘯𝘢𝘭 𝘱𝘶𝘳𝘱𝘰𝘴𝘦𝘴 𝘰𝘯𝘭𝘺. 𝘐𝘵 𝘪𝘴 𝘯𝘰𝘵 𝘢 𝘴𝘶𝘣𝘴𝘵𝘪𝘵𝘶𝘵𝘦 𝘧𝘰𝘳 𝘱𝘳𝘰𝘧𝘦𝘴𝘴𝘪𝘰𝘯𝘢𝘭 𝘮𝘦𝘥𝘪𝘤𝘢𝘭 𝘢𝘥𝘷𝘪𝘤𝘦, 𝘥𝘪𝘢𝘨𝘯𝘰𝘴𝘪𝘴, 𝘰𝘳 𝘵𝘳𝘦𝘢𝘵𝘮𝘦𝘯𝘵. 𝘛𝘩𝘦 𝘢𝘤𝘤𝘶𝘳𝘢𝘤𝘺 𝘰𝘧 𝘵𝘩𝘦 𝘢𝘯𝘢𝘭𝘺𝘴𝘪𝘴 𝘥𝘦𝘱𝘦𝘯𝘥𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘤𝘭𝘢𝘳𝘪𝘵𝘺 𝘰𝘧 𝘵𝘩𝘦 𝘶𝘱𝘭𝘰𝘢𝘥𝘦𝘥 𝘳𝘦𝘱𝘰𝘳𝘵. 𝘈𝘭𝘸𝘢𝘺𝘴 𝘷𝘦𝘳𝘪𝘧𝘺 𝘵𝘩𝘦𝘴𝘦 𝘳𝘦𝘴𝘶𝘭𝘵𝘴 𝘸𝘪𝘵𝘩 𝘢 𝘲𝘶𝘢𝘭𝘪𝘧𝘪𝘦𝘥 𝘩𝘦𝘢𝘭𝘵𝘩𝘤𝘢𝘳𝘦 𝘱𝘳𝘰𝘧𝘦𝘴𝘴𝘪𝘰𝘯𝘢𝘭 𝘣𝘦𝘧𝘰𝘳𝘦 𝘮𝘢𝘬𝘪𝘯𝘨 𝘢𝘯𝘺 𝘮𝘦𝘥𝘪𝘤𝘢𝘭 𝘥𝘦𝘤𝘪𝘴𝘪𝘰𝘯𝘴</p>
+    </div>
+    <div class="upload-box" id="uploadArea">
+      <h3>📸 Upload Your Lab Report</h3>
+      <p>Please upload a clear image for the best results.</p>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <button class="btn" id="uploadBtn">Choose File</button>
+      <div class="progress" id="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div id="status"></div>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    // Enhanced JS with 16 Tests (ALT Removed), Fixed Extraction & Interpretation
+    const REF_RANGES = {
+      hemoglobin: { min: 13, max: 17, unit: 'g/dL', full: 'Hemoglobin' },
+      wbc: { min: 4, max: 11, unit: 'x10³/µL', full: 'WBC' },
+      platelets: { min: 150, max: 450, unit: 'x10³/µL', full: 'Platelets' },
+      rbc: { min: 4.5, max: 5.5, unit: 'x10⁶/µL', full: 'RBC' },
+      mcv: { min: 80, max: 100, unit: 'fL', full: 'MCV' },
+      mch: { min: 27, max: 32, unit: 'pg', full: 'MCH' },
+      mchc: { min: 32, max: 36, unit: 'g/dL', full: 'MCHC' },
+      pcv: { min: 40, max: 50, unit: '%', full: 'PCV (Hematocrit)' },
+      glucose: { min: 70, max: 100, unit: 'mg/dL', full: 'Fasting Blood Sugar' },
+      hba1c: { min: 4, max: 5.6, unit: '%', full: 'HbA1c' },
+      cholesterol: { min: 0, max: 200, unit: 'mg/dL', full: 'Total Cholesterol' },
+      triglycerides: { min: 0, max: 150, unit: 'mg/dL', full: 'Triglycerides' },
+      sgpt: { min: 0, max: 41, unit: 'U/L', full: 'SGPT (AST)' },
+      creatinine: { min: 0.6, max: 1.2, unit: 'mg/dL', full: 'Creatinine' },
+      urea: { min: 7, max: 20, unit: 'mg/dL', full: 'Blood Urea' },
+      tsh: { min: 0.4, max: 4.0, unit: 'mIU/L', full: 'TSH' }
+    };
+
+    function extractResults(text) {
+      const lines = text.split('\n');
+      const results = [];
+      for (const line of lines) {
+        const lowerLine = line.toLowerCase();
+        for (const [key, config] of Object.entries(REF_RANGES)) {
+          let detected = false;
+          if (key === 'hemoglobin' && lowerLine.includes('hb')) detected = true;
+          if (key === 'wbc' && lowerLine.includes('wbc')) detected = true;
+          if (key === 'platelets' && lowerLine.includes('plt')) detected = true;
+          if (key === 'rbc' && lowerLine.includes('rbc')) detected = true;
+          if (key === 'mcv' && lowerLine.includes('mcv')) detected = true;
+          if (key === 'mch' && lowerLine.includes('mch') && !lowerLine.includes('concentration') && !lowerLine.includes('c')) detected = true;
+          if (key === 'mchc' && (lowerLine.includes('mchc') || lowerLine.includes('mch concentration'))) detected = true;
+          if (key === 'pcv' && (lowerLine.includes('pcv') || lowerLine.includes('hematocrit') || lowerLine.includes('hct'))) detected = true;
+          if (key === 'glucose' && (lowerLine.includes('sugar') || lowerLine.includes('bsl'))) detected = true;
+          if (key === 'hba1c' && lowerLine.includes('hba1c')) detected = true;
+          if (key === 'cholesterol' && lowerLine.includes('cholesterol')) detected = true;
+          if (key === 'triglycerides' && lowerLine.includes('triglyceride')) detected = true;
+          if (key === 'sgpt' && (lowerLine.includes('ast') || lowerLine.includes('sgpt'))) detected = true;
+          if (key === 'creatinine' && lowerLine.includes('creatinine')) detected = true;
+          if (key === 'urea' && lowerLine.includes('urea')) detected = true;
+          if (key === 'tsh' && lowerLine.includes('tsh')) detected = true;
+
+          if (detected) {
+            const numMatch = line.match(/(\d+\.?\d*)/);
+            if (numMatch) {
+              let value = parseFloat(numMatch[1]);
+              if (key === 'wbc' && value > 1000) value /= 1000;
+              if (key === 'platelets' && value > 10000) value /= 1000;
+              if (key === 'rbc' && value > 1000) value /= 1000000;
+              results.push({ key, name: config.full, value: value.toFixed(1), unit: config.unit, ref: `${config.min}–${config.max}`, isNormal: value >= config.min && value <= config.max });
+            }
+          }
+        }
+      }
+      return results;
+    }
+
+    function generateAnalysis(results) {
+      let advice = '';
+      let abnormalCount = 0;
+      results.forEach((r, i) => {
+        const status = r.isNormal ? 'Normal ✅' : 'Abnormal ⚠️';
+        if (!r.isNormal) abnormalCount++;
+        const className = r.isNormal ? 'analysis-item' : 'analysis-item abnormal';
+        advice += `<div class="${className}"><strong>${i+1}. ${r.name}: ${r.value} ${r.unit}</strong> (Ref: ${r.ref}) → ${status}. ${getAdvice(r)}</div>`;
+      });
+      const doctorNote = generateDoctorNote(results, abnormalCount);
+      return advice + doctorNote;
+    }
+
+    function getAdvice(r) {
+      if (r.key === 'hemoglobin' && !r.isNormal) return 'Low iron levels. Eat spinach, chickpeas, meat to improve.';
+      if (r.key === 'wbc' && !r.isNormal) return 'Possible infection. Rest, drink lemon water, consult doctor.';
+      if (r.key === 'glucose' && !r.isNormal) return 'High sugar. Reduce sweets, walk daily.';
+      if (r.key === 'cholesterol' && !r.isNormal) return 'High cholesterol. Eat less oil, more veggies.';
+      if (r.key === 'creatinine' && !r.isNormal) return 'Kidney check needed. Drink more water.';
+      if (r.key === 'mch' && !r.isNormal) return 'Anemia sign. Iron-rich diet.';
+      if (r.key === 'mchc' && !r.isNormal) return 'Hemoglobin concentration issue. Doctor consult.';
+      if (r.key === 'pcv' && !r.isNormal) return 'High PCV — dehydration or blood disorder chance. Drink more water, check with doctor.';
+      return 'Looks good! Maintain healthy habits.';
+    }
+
+    function generateDoctorNote(results, abnormalCount) {
+      let note = '<div class="doctor-note"><h3>📌 Doctor\'s Note:</h3>';
+      if (abnormalCount === 0) {
+        note += 'All tests are normal — thank God! Continue healthy diet, exercise, and regular checkups.';
+      } else {
+        // Check specific abnormal tests
+        const abnormalTests = results.filter(r => !r.isNormal).map(r => r.key);
+        let specificNote = '';
+        if (abnormalTests.includes('hemoglobin')) specificNote += 'anemia signs ';
+        if (abnormalTests.includes('wbc')) specificNote += 'infection signs ';
+        if (abnormalTests.includes('glucose')) specificNote += 'diabetes signs ';
+        if (abnormalTests.includes('pcv')) specificNote += 'dehydration signs ';
+        // Add more as needed
+        note += `${abnormalCount} tests abnormal (${specificNote.trim()}). Not serious, but consult doctor. Diet and lifestyle changes can help a lot.`;
+      }
+      note += '<br><br>✅ General Tips: Drink plenty of water, avoid junk food, get enough sleep. If you have symptoms (fatigue, dizziness, pale skin), see a doctor immediately.</div>';
+      return note;
+    }
+
+    async function processImage(file) {
+      const resultsDiv = document.getElementById('results');
+      const statusDiv = document.getElementById('status');
+      const progress = document.getElementById('progress');
+      const progressBar = document.getElementById('progressBar');
+      resultsDiv.innerHTML = '';
+      progress.style.display = 'block';
+      statusDiv.textContent = 'Scanning...';
+
+      try {
+        const result = await Tesseract.recognize(URL.createObjectURL(file), 'eng', {
+          logger: m => {
+            if (m.status === 'recognizing text') progressBar.style.width = `${m.progress * 100}%`;
+          }
+        });
+        progress.style.display = 'none';
+        const text = result.data.text;
+        const results = extractResults(text);
+        if (results.length === 0) {
+          resultsDiv.innerHTML = '<div class="error">No tests detected. Try a clearer image.</div>';
+          return;
+        }
+        const html = `<div class="report"><div class="test-title">🩺 Your Report Analysis</div>${generateAnalysis(results)}</div>`;
+        resultsDiv.innerHTML = html;
+      } catch (err) {
+        progress.style.display = 'none';
+        resultsDiv.innerHTML = '<div class="error">Error processing. Check image and internet.</div>';
+      }
+    }
+
+    function exportPDF(results) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text('MedScan.pk Report', 10, 10);
+      results.forEach((r, i) => doc.text(`${i+1}. ${r.name}: ${r.value} ${r.unit} (${r.isNormal ? 'Normal' : 'Abnormal'})`, 10, 20 + i*10));
+      doc.save('report.pdf');
+    }
+
+    document.getElementById('uploadBtn').onclick = () => document.getElementById('fileInput').click();
+    document.getElementById('fileInput').onchange = (e) => {
+      if (e.target.files[0]) processImage(e.target.files[0]);
+    };
+  </script>
+</body>
+</html>
